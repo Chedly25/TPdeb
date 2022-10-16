@@ -7,7 +7,7 @@ public class Client extends JFrame {
     private Champ champ;
     private GUI gui;
     private int score;
-    private HashMap<Integer, Integer> listeScores;
+    private HashMap<Integer, Integer> listeScores = new HashMap<>();
 
     public static void main(String [] args) {
         new Client();
@@ -49,7 +49,7 @@ public class Client extends JFrame {
             // Envoi du nom au serveur
             out.writeUTF(name);
             // Instanciation des classes de threads de lecture et écriture avec le serveur
-            ReadFromServer rfs = new ReadFromServer(in);
+            ReadFromServer rfs = new ReadFromServer(in, objectInputStream);
             WriteToServer wts = new WriteToServer(out, numJoueur);
             Thread thRead = new Thread(rfs);
             Thread thWrite = new Thread(wts);
@@ -88,10 +88,10 @@ public class Client extends JFrame {
 
     private class ReadFromServer implements Runnable{
         private DataInputStream entree;
-        //private ObjectInputStream ois;
-        public ReadFromServer(DataInputStream entree){
+        private ObjectInputStream ois;
+        public ReadFromServer(DataInputStream entree, ObjectInputStream ois){
             this.entree = entree;
-            //this.ois = ois;
+            this.ois = ois;
         }
         public void run(){
             // Le thread tourne tout au long de la partie
@@ -106,11 +106,9 @@ public class Client extends JFrame {
                     else{
                         gui.setClic(x, y);
                     }
-                    /**if(gui.getGameOver()){
-                        listeScores = (HashMap<Integer, Integer>) ois.readObject();
-                        gui.showGameOver();
-                    }*/
-                } catch (IOException e) {
+                    listeScores = (HashMap<Integer, Integer>) ois.readObject();
+
+                } catch (IOException | ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }
                 try{

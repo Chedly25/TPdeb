@@ -106,6 +106,8 @@ public class Case extends JPanel implements MouseListener{
             boolean loss = gui.lostOrNot(posX, posY);
             gui.zeroACote(posX, posY);
             gui.updateScore(posX, posY);
+            gui.wonorNot();
+            gui.showGameOver();
             repaint();
         } else if (SwingUtilities.isRightMouseButton(e)) {
             if (!rightclick) {

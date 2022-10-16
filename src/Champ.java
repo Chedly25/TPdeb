@@ -3,7 +3,7 @@ import java.io.Serializable;
 public class Champ implements Serializable{
 
     private final int[] TAILLE = {10, 20, 30};
-    private final int[] NBMINES = {20,50,90};
+    private final int[] NBMINES = {10,40,60};
     private int nbmines;
     private boolean[][] champ;
     /**public Champ(){
@@ -19,40 +19,23 @@ public class Champ implements Serializable{
         this.nbmines = NBMINES[level.ordinal()];
     }
     public int getNbMines(){ return nbmines;}
-    /**public int[] niveau(Level level){
-        if(level == Level.EASY){
-            this.TAILLE = 10;
-            this.MAX = 12;
-        }
-        if(level == Level.MEDIUM){
-            this.TAILLE = 20;
-            this.MAX = 40;
-        }
-        if(level == Level.HARD){
-            this.TAILLE = 30;
-            this.MAX = 90;
-        }
-        int[] nbr = new int[2];
-        nbr[0] = TAILLE;
-        nbr[1] = MAX;
-        return nbr;
-    }*/
     public void placeMines(){
-        int i = 0;
+        int i = 1;
         Random gene = new Random();
         while(i<=nbmines){
-            int case0 = gene.nextInt(champ.length);
-            int case1 = gene.nextInt(champ.length);
+            int case0 = gene.nextInt(champ[0].length);
+            int case1 = gene.nextInt(champ[1].length);
             if(!this.champ[case0][case1]){
                 this.champ[case0][case1] = true;
+                i++;
             }
-            i++;
         }
     }
 
-    public int getDim(){
-        return  this.champ.length;
+    public int getDim1(){
+        return  this.champ[0].length;
     }
+    public int getDim2(){ return this.champ[1].length;}
     public int nbrMines(int x, int y){
         int nb = 0;
         int borneinfx = x==0 ? 0: x-1;
@@ -127,10 +110,14 @@ public class Champ implements Serializable{
         placeMines();
         affText();
     }
+    public void custom(int dim1, int dim2){
+        champ = new boolean[dim1][dim2];
+        nbmines = dim1*dim2/10;
+        placeMines();
+        affText();
+    }
     public void newGameChamp(){
         resetChamp();
-        //new Main();
-        //champ = new Champ(Level.EASY);
         placeMines();
         affText();
     }

@@ -1,5 +1,6 @@
 import java.net.* ; // Sockets
 import java.io.* ; // Streams
+import java.util.Collections;
 import java.util.HashMap;
 
 public class Serveur implements Runnable{
@@ -59,7 +60,7 @@ public class Serveur implements Runnable{
             listeScores.put(nbrClients, 0);
             //Instanciation des threads de lecture et écriture
             ReadFromClient rfc = new ReadFromClient(entree);
-            WriteToClient wtc = new WriteToClient(sortie);
+            WriteToClient wtc = new WriteToClient(sortie, objectOutputStream);
             //WriteToClient wtc = new WriteToClient(sortie, objectOutputStream);
             Thread thRead = new Thread(rfc);
             Thread thWrite = new Thread(wtc);
@@ -82,6 +83,7 @@ public class Serveur implements Runnable{
                     int numJ = entree.readInt();
                     int score = entree.readInt();
                     listeScores.put(numJ, score);
+                    System.out.println(Collections.singletonList(listeScores));
                     //gameOver = entree.readBoolean();
 
                 } catch (IOException e) {
@@ -92,17 +94,18 @@ public class Serveur implements Runnable{
     }
     private class WriteToClient implements Runnable{
         private DataOutputStream sortie;
-        //private ObjectOutputStream oos;
-        public WriteToClient(DataOutputStream sortie){
+        private ObjectOutputStream oos;
+        public WriteToClient(DataOutputStream sortie, ObjectOutputStream oos){
 
             this.sortie = sortie;
-            //this.oos = oos;
+            this.oos = oos;
         }
         public void run(){
             while(true){
                 try {
                     sortie.writeInt(clicX);
                     sortie.writeInt(clicY);
+                    oos.writeObject(listeScores);
                     sortie.flush();
                     /**if(gameOver){
                         oos.writeObject(listeScores);

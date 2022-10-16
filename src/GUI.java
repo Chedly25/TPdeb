@@ -31,6 +31,8 @@ public class GUI extends JPanel implements Serializable, ActionListener {
     private int min;
     private boolean fieldChanged;
     private boolean gameOver;
+    private int dimension1;
+    private int dimension2;
 
     JPanel panelcenter = new JPanel();
     JPanel panelcase = new JPanel();
@@ -45,12 +47,13 @@ public class GUI extends JPanel implements Serializable, ActionListener {
     GUI(Client client) {
         setLayout(new BorderLayout());
         this.client = client;
-        int dim = client.getChamp().getDim();
-        this.tabMines = new JLabel[dim][dim];
-        cases = new Case[dim][dim];
-        setPanel(dim);
+        int dim1 = client.getChamp().getDim1();
+        int dim2 = client.getChamp().getDim2();
+        this.tabMines = new JLabel[dim1][dim2];
+        cases = new Case[dim1][dim2];
+        setPanel(dim1, dim2);
         setMenu();
-        fillPanels(dim);
+        fillPanels(dim1, dim2);
         timer();
         add(panelcenter, BorderLayout.CENTER);
         add(panelcase, BorderLayout.CENTER);
@@ -65,10 +68,10 @@ public class GUI extends JPanel implements Serializable, ActionListener {
     public boolean getQuit() { return quit;}
     public synchronized Case getcase(int i, int j) { return cases[i][j];};
     public JPanel getPanelcase(){ return panelcase;}
-    public void setPanel(int dim){
-        panelcenter.setLayout(new GridLayout(dim, dim, 2, 2));
+    public void setPanel(int dim1, int dim2){
+        panelcenter.setLayout(new GridLayout(dim1, dim2, 2, 2));
         panelcenter.setBorder( new MatteBorder(2, 2, 2, 2, Color.BLACK) );
-        panelcase.setLayout(new GridLayout(dim, dim));
+        panelcase.setLayout(new GridLayout(dim1, dim2));
         bouton.setPreferredSize(new Dimension(50,40));
         quitter.setPreferredSize(new Dimension(50,40));
         panelnorth.add(bouton, BorderLayout.CENTER);
@@ -99,10 +102,10 @@ public class GUI extends JPanel implements Serializable, ActionListener {
         menuReseau.addActionListener(this);
         client.setJMenuBar(menuBar);
     }
-    public void fillPanels(int dim){
+    public void fillPanels(int dim1, int dim2){
         nbmines = client.getChamp().getNbMines();
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) {
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < dim2; j++) {
                 String str = client.getChamp().xOuR(i, j);
                 JLabel lab = new JLabel(str);
                 panelcenter.add(lab);
@@ -110,8 +113,8 @@ public class GUI extends JPanel implements Serializable, ActionListener {
                 tabMines[i][j] = lab;
             }
         }
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) {
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < dim2; j++) {
                 cases[i][j] = new Case(i,j, this);
                 panelcase.add(cases[i][j]);
             }
@@ -154,6 +157,11 @@ public class GUI extends JPanel implements Serializable, ActionListener {
         nbmines ++;
         nbrMines.setText(String.valueOf(nbmines));
     }
+    public int[] setCustom(){
+        dimension1 = Integer.parseInt(JOptionPane.showInputDialog(null, "Longueur" ));
+        dimension2 = Integer.parseInt(JOptionPane.showInputDialog(null, "Largeur" ));
+        return new int[]{dimension1, dimension2};
+    }
     public void increasenbrCasesOuvertes(){
         nbrCasesOuvertes++;
     }
@@ -170,9 +178,12 @@ public class GUI extends JPanel implements Serializable, ActionListener {
         }
         return loss;
     }
-    public boolean WonorNot(){
+    public boolean wonorNot(){
         boolean win = false;
-        if(client.getChamp().getDim() - nbrCasesOuvertes == nbmines){
+        int nbr = client.getChamp().getNbMines();
+        int dim1 = client.getChamp().getDim1();
+        int dim2 = client.getChamp().getDim2();
+        if( dim1*dim2 - nbrCasesOuvertes == nbr){
             JOptionPane.showMessageDialog(null, "GG WP" );
             win = true;
             gameOver = true;
@@ -187,13 +198,13 @@ public class GUI extends JPanel implements Serializable, ActionListener {
         return sorted;
     }
     public void showGameOver(){
-        String str = "";
-        HashMap< Integer, Integer> hash = client.getListeScores();
-        SortedSet<Integer> sortedHash = sortHashMap(hash);
-        for(int i : sortedHash){
-            str = str + i;
+        if(gameOver) {
+            String str = "";
+            HashMap<Integer, Integer> hash = client.getListeScores();
+            SortedSet<Integer> sortedHash = sortHashMap(hash);
+            JOptionPane.showMessageDialog(null, Collections.singletonList(hash));
+            System.out.println(Collections.singletonList(hash));
         }
-        JOptionPane.showMessageDialog(null, str);
     }
     public void zeroACote(int x, int y) {
         if (!tabMines[x][y].getText().equals("x") && !tabMines[x][y].getText().equals("0")) {
@@ -204,13 +215,14 @@ public class GUI extends JPanel implements Serializable, ActionListener {
                     cases[x][y].setHasFilled();
                     int borneinfx = x == 0 ? 0 : x - 1;
                     int borneinfy = y == 0 ? 0 : y - 1;
-                    int bornesupx = x == client.getChamp().getDim() - 1 ? client.getChamp().getDim() - 1 : x + 1;
-                    int bornesupy = y == client.getChamp().getDim() - 1 ? client.getChamp().getDim() - 1 : y + 1;
+                    int bornesupx = x == client.getChamp().getDim1() - 1 ? client.getChamp().getDim1() - 1 : x + 1;
+                    int bornesupy = y == client.getChamp().getDim2() - 1 ? client.getChamp().getDim2() - 1 : y + 1;
                     for (int i = borneinfx; i <= bornesupx; i++) {
                         for (int j = borneinfy; j <= bornesupy; j++) {
                             if (i != x || j != y) {
                                 if (!tabMines[i][j].getText().equals("x") && !cases[i][j].getclick()) {
                                     cases[i][j].setClick();
+                                    nbrCasesOuvertes++;
                                 }
                                 if (tabMines[i][j].getText().equals("0") && !cases[i][j].getHasFilled()) {
                                     zeroACote(i, j);
@@ -256,19 +268,19 @@ public class GUI extends JPanel implements Serializable, ActionListener {
         String txt = JOptionPane.showInputDialog(null, "What's ya name bruh?" );
         return txt;
     }
-    private void updatePanel(int dim, JPanel panel){
+    private void updatePanel(int dim1, int dim2, JPanel panel){
         panel.removeAll();
-        panel.setLayout(new GridLayout(dim, dim));
+        panel.setLayout(new GridLayout(dim1, dim2));
     }
-
     /**
      * nouveau champ pour recommencer une partie au même niveau
      */
     public void newChamp() {
-        int dim = client.getChamp().getDim();
-        updatePanel(dim, panelcase);
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) {
+        int dim1 = client.getChamp().getDim1();
+        int dim2 = client.getChamp().getDim2();
+        updatePanel(dim1, dim2, panelcase);
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < dim2; j++) {
                 String str = client.getChamp().xOuR(i,j);
                 tabMines[i][j].setText(str);
             }
@@ -279,8 +291,8 @@ public class GUI extends JPanel implements Serializable, ActionListener {
         Score.setText("Score: " + score);
         panelnorth.add(Score);
         panelnorth.add(nbrMines);
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) {
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < dim2; j++) {
                 cases[i][j] = new Case(i,j, this);
                 panelcase.add(cases[i][j]);
             }
@@ -294,21 +306,22 @@ public class GUI extends JPanel implements Serializable, ActionListener {
         return startCo;
     }
     public void newChampLevel(){
-        int dim = client.getChamp().getDim();
-        tabMines = new JLabel[dim][dim];
-        cases = new Case[dim][dim];
-        updatePanel(dim, panelcenter);
-        updatePanel(dim, panelcase);
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) {
+        int dim1 = client.getChamp().getDim1();
+        int dim2 = client.getChamp().getDim2();
+        tabMines = new JLabel[dim1][dim2];
+        cases = new Case[dim1][dim2];
+        updatePanel(dim1, dim2, panelcenter);
+        updatePanel(dim1, dim2, panelcase);
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < dim2; j++) {
                 String str = client.getChamp().xOuR(i,j);
                 JLabel lab = new JLabel(str);
                 panelcenter.add(lab);
                 tabMines[i][j] = lab;
             }
         }
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) {
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < dim2; j++) {
                 cases[i][j] = new Case(i,j, this);
                 panelcase.add(cases[i][j]);
             }
